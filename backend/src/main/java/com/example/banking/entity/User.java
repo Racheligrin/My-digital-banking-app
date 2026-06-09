@@ -16,9 +16,8 @@ public class User {
     private String username;
     private String email;
     private String password;
-    private String role; // "CLIENT" או "ADMIN"
+    private String role; 
 
-    // קשר של משתמש אחד שיכול להחזיק מספר חשבונות
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<Account> accounts;
 }
