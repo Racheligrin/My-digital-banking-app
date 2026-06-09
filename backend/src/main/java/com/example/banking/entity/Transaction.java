@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "transactions")
-@Getter // משתמשים ב-Getter ו-Setter נפרדים במקום @Data כדי למנוע את הלולאה האינסופית
+@Getter 
 @Setter
 public class Transaction {
 
@@ -15,7 +15,7 @@ public class Transaction {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String operationType; // "DEPOSIT", "WITHDRAW", "TRANSFER"
+    private String operationType; 
     private double amount;
     private LocalDateTime timestamp;
 
