@@ -23,7 +23,6 @@ public class AccountService {
     private final UserRepository userRepository;
     private final TransactionRepository transactionRepository;
 
-    // הזרקת כל ה-Repositories הרלוונטיים לתוך השירות
     public AccountService(AccountRepository accountRepository, 
                           UserRepository userRepository, 
                           TransactionRepository transactionRepository) {
@@ -32,17 +31,14 @@ public class AccountService {
         this.transactionRepository = transactionRepository;
     }
 
-    // 1. יצירת חשבון חדש (כולל יצירת משתמש במערכת אם הוא לא קיים)
     @Transactional
     public AccountDTO createAccount(AccountDTO accountDTO) {
-        // יוצרים משתמש חדש בבסיס הנתונים עבור בעל החשבון
         User user = new User();
         user.setUsername(accountDTO.getUsername());
         user.setEmail(accountDTO.getEmail());
         user.setRole("CLIENT");
         User savedUser = userRepository.save(user);
 
-        // יוצרים את החשבון ומקשרים אותו למשתמש ששמרנו
         Account account = new Account();
         account.setAccountNumber(accountDTO.getAccountNumber());
         account.setBalance(accountDTO.getBalance());
@@ -52,16 +48,12 @@ public class AccountService {
         return convertToDto(savedAccount);
     }
 
-    // 2. קבלת פרטי חשבון לפי מספר חשבון (כולל כל היסטוריית התנועות שלו!)
     public AccountDTO getAccountByNumber(String accountNumber) {
         Account account = accountRepository.findByAccountNumber(accountNumber)
                 .orElseThrow(() -> new RuntimeException("החשבון לא נמצא במערכת"));
         return convertToDto(account);
     }
 
-    // =================================================================
-    // פונקציה מעניינת 1: העברת כספים בין חשבונות + תיעוד הפעולה
-    // =================================================================
     @Transactional 
     public void transferMoney(String sourceAccountNumber, String destAccountNumber, double amount) {
         if (amount <= 0) {
@@ -78,22 +70,16 @@ public class AccountService {
             throw new RuntimeException("אין מספיק יתרה בחשבון לביצוע ההעברה");
         }
 
-        // עדכון יתרות
         sourceAccount.setBalance(sourceAccount.getBalance() - amount);
         destAccount.setBalance(destAccount.getBalance() + amount);
 
         accountRepository.save(sourceAccount);
         accountRepository.save(destAccount);
 
-        // תיעוד הפעולה בחשבון המקור (משיכה/העברה החוצה)
         createTransactionRecord(sourceAccount, "TRANSFER_OUT", amount);
-        // תיעוד הפעולה בחשבון היעד (הפקדה/העברה פנימה)
         createTransactionRecord(destAccount, "TRANSFER_IN", amount);
     }
 
-    // =================================================================
-    // פונקציה מעניינת 2: הפקדה או משיכת מזומן + תיעוד הפעולה
-    // =================================================================
     @Transactional
     public AccountDTO updateBalance(String accountNumber, String operationType, double amount) {
         if (amount <= 0) {
@@ -116,15 +102,11 @@ public class AccountService {
 
         Account updatedAccount = accountRepository.save(account);
         
-        // שמירת הפעולה בהיסטוריית התנועות
         createTransactionRecord(updatedAccount, operationType.toUpperCase(), amount);
         
         return convertToDto(updatedAccount);
     }
 
-    // =================================================================
-    // פונקציה מעניינת 3: מערכת אישור הלוואות דיגיטלית אוטומטית + תיעוד
-    // =================================================================
     @Transactional
     public AccountDTO requestLoan(String accountNumber, double loanAmount) {
         Account account = accountRepository.findByAccountNumber(accountNumber)
@@ -139,13 +121,11 @@ public class AccountService {
         account.setBalance(account.getBalance() + loanAmount);
         Account updatedAccount = accountRepository.save(account);
         
-        // שמירת הפעולה בהיסטוריית התנועות
         createTransactionRecord(updatedAccount, "LOAN_APPROVED", loanAmount);
         
         return convertToDto(updatedAccount);
     }
 
-    // פונקציית עזר פנימית ליצירת ושמירת תנועה בבסיס הנתונים
     private void createTransactionRecord(Account account, String type, double amount) {
         Transaction tx = new Transaction();
         tx.setOperationType(type);
@@ -155,22 +135,17 @@ public class AccountService {
         transactionRepository.save(tx);
     }
 
-    // =================================================================
-    // פונקציות מיפוי (Mapping) מורכבות ומלאות - דרישת חובה בפרויקט
-    // =================================================================
     
     private AccountDTO convertToDto(Account account) {
         AccountDTO dto = new AccountDTO();
         dto.setAccountNumber(account.getAccountNumber());
         dto.setBalance(account.getBalance());
         
-        // מיפוי נתוני המשתמש מתוך ישות המשתמש הקשורה
         if (account.getUser() != null) {
             dto.setUsername(account.getUser().getUsername());
             dto.setEmail(account.getUser().getEmail());
         }
         
-        // מיפוי רשימת התנועות מתוך ישויות התנועה של החשבון
         if (account.getTransactions() != null) {
             List<TransactionDTO> txDtos = account.getTransactions().stream().map(tx -> {
                 TransactionDTO txDto = new TransactionDTO();
