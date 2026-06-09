@@ -16,21 +16,18 @@ public class AccountController {
         this.accountService = accountService;
     }
 
-    // 1. יצירת חשבון חדש
     @PostMapping
     public ResponseEntity<AccountDTO> createAccount(@RequestBody AccountDTO accountDTO) {
         AccountDTO created = accountService.createAccount(accountDTO);
         return ResponseEntity.ok(created);
     }
 
-    // 2. קבלת פרטי חשבון לפי מספר חשבון
     @GetMapping("/{accountNumber}")
     public ResponseEntity<AccountDTO> getAccount(@PathVariable String accountNumber) {
         AccountDTO account = accountService.getAccountByNumber(accountNumber);
         return ResponseEntity.ok(account);
     }
 
-    // 3. נקודת קצה לפונקציה מעניינת 1: העברת כספים
     @PostMapping("/transfer")
     public ResponseEntity<String> transferMoney(
             @RequestParam String sourceAccountNumber,
@@ -41,7 +38,6 @@ public class AccountController {
         return ResponseEntity.ok("ההעברה בוצעה בהצלחה!");
     }
 
-    // 4. נקודת קצה לפונקציה מעניינת 2: הפקדה או משיכה
     @PutMapping("/{accountNumber}/balance")
     public ResponseEntity<AccountDTO> updateBalance(
             @PathVariable String accountNumber,
@@ -52,7 +48,6 @@ public class AccountController {
         return ResponseEntity.ok(updated);
     }
 
-    // 5. נקודת קצה לפונקציה מעניינת 3: בקשת הלוואה אוטומטית
     @PostMapping("/{accountNumber}/loan")
     public ResponseEntity<AccountDTO> requestLoan(
             @PathVariable String accountNumber,
