@@ -16,13 +16,10 @@ public class Account {
     private String accountNumber;
     private double balance;
 
-    // 1. במקום String ownerName - אנחנו מקשרים את החשבון למשתמש אמיתי
     @ManyToOne
-    @JoinColumn(name = "user_id") // יוצר עמודת מפתח זר בטבלה שמקשרת למשתמש
+    @JoinColumn(name = "user_id") 
     private User user;
 
-    // 2. הוספת קשר להיסטוריית הפעולות (תנועות) של החשבון
-    // נשתמש ב-MappedBy כדי להגיד שבישות Transaction יש שדה שמקשר חזרה לחשבון הזה
     @OneToMany(mappedBy = "account", cascade = CascadeType.ALL)
     private List<Transaction> transactions;
 }
